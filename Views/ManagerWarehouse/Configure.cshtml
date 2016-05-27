@@ -1,0 +1,46 @@
+﻿@{
+    Layout = "";
+}
+@model  List<Nop.Plugin.Misc.Warehouse.Model.ConfigurationModel>
+
+@using Nop.Web.Framework;
+@Html.Action("StoreScopeConfiguration", "Setting", new { area = "Admin" })
+<h3>
+    @T("Plugins.Misc.Warehouse.Fields.TiTle")
+</h3>
+<p>
+    @T("Plugins.Misc.Warehouse.Fields.Description")
+</p>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    for (var i = 0; i < Model.Count; i++)
+    {
+        var index = i;
+        <fieldset>
+            <legend><strong>@Model[index].Name</strong></legend>
+            <table class="adminContent">
+                <tr>
+                    <td class="adminTitle">
+                        @Html.NopLabelFor(model => model[index].Length):
+                        @Html.HiddenFor(model=>model[index].Name)
+                    </td>
+                    <td class="adminData">
+                        @Html.EditorFor(model => model[index].Length)
+                        @Html.ValidationMessageFor(model => model[index].Length)
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+    }
+
+    <br />
+    <table class="adminContent">
+        <tr>
+            <td colspan="2">
+                <input type="submit" name="save" class="k-button" value="@T("Admin.Common.Save")" />
+            </td>
+        </tr>
+    </table>
+}

@@ -1,0 +1,31 @@
+﻿@using Nop.Web.Framework
+@model Nop.Plugin.Misc.Warehouse.Model.WarehouseStateModel
+
+@{
+    ViewBag.Title = T("Admin.Catalog.Categories.Manage").Text;
+}
+@Html.AntiForgeryToken()
+<div class="section-header">
+    <div class="title">
+        <img src="@Url.Content("~/Administration/Content/images/ico-catalog.png")" alt="" />
+        @T("Admin.Catalog.Categories.Manage") @Html.ActionLink("(" + T("Admin.Catalog.Categories.SwitchToTreeView") + ")", "Tree")
+    </div>
+    <div class="options">
+        <a href="@Url.Action("Create")" class="k-button">@T("Admin.Common.AddNew")</a> <a href="@Url.Action("ExportXml")" class="k-button">@T("Admin.Common.ExportToXml")</a>
+    </div>
+</div>
+<table width="100%">
+    <tr>
+        <td class="adminTitle">
+            @Html.NopLabelFor(model => model.WarehouseId):
+        </td>
+        <td class="adminData">
+            @Html.EditorFor(model => model.WarehouseName)
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <input type="button" id="search-categories" class="k-button" value="@T("Admin.Common.Search")" />
+        </td>
+    </tr>
+</table>

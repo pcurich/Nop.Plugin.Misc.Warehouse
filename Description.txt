@@ -1,0 +1,8 @@
+﻿Group: Misc
+FriendlyName: Manager Warehouse
+SystemName: Misc.Warehouse
+Version: 1.00
+SupportedVersions: 3.70
+Author: Kreier solutions
+DisplayOrder: 1
+FileName: Nop.Plugin.Misc.Warehouse.dll
