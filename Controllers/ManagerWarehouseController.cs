@@ -1,11 +1,19 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Security;
 using System.Web.Mvc;
 using Nop.Core;
+using Nop.Core.Domain.Security;
 using Nop.Plugin.Misc.Warehouse.Model;
+using Nop.Plugin.Misc.Warehouse.Services;
 using Nop.Services.Configuration;
 using Nop.Services.Localization;
+using Nop.Services.Security;
+using Nop.Services.Shipping;
 using Nop.Services.Stores;
 using Nop.Web.Framework.Controllers;
+using Nop.Web.Framework.Kendoui;
 
 namespace Nop.Plugin.Misc.Warehouse.Controllers
 {
@@ -15,15 +23,27 @@ namespace Nop.Plugin.Misc.Warehouse.Controllers
         private readonly ISettingService _settingService;
         private readonly IStoreService _storeService;
         private readonly IWorkContext _workContext;
+        private readonly IShippingService _shippingService;
+        private readonly IManagerWarehouseService _managerWarehouseService;
 
-        public ManagerWarehouseController(ISettingService settingService, IStoreService storeService,
-            IWorkContext workContext, ILocalizationService localizationService)
+        private readonly IPermissionService _permissionService;
+        private PermissionRecord permissionRecord = new PermissionRecord
         {
+            Category = "Plugin",
+            SystemName = "ManagerWarehouse",
+            Name = "Admin area. Manager Warehouse"
+        };
+
+        public ManagerWarehouseController(ILocalizationService localizationService, ISettingService settingService, IStoreService storeService, IWorkContext workContext, IShippingService shippingService, IPermissionService permissionService)
+        {
+            _localizationService = localizationService;
             _settingService = settingService;
             _storeService = storeService;
             _workContext = workContext;
-            _localizationService = localizationService;
+            _shippingService = shippingService;
+            _permissionService = permissionService;
         }
+
 
         #region Configure
 
@@ -52,7 +72,7 @@ namespace Nop.Plugin.Misc.Warehouse.Controllers
                     Length = wareouseSettings.ValueLength,
                 }
             };
- 
+
             return View(model);
         }
 
@@ -67,7 +87,7 @@ namespace Nop.Plugin.Misc.Warehouse.Controllers
 
             foreach (var configurationModel in model)
             {
-                 
+
                 if (_localizationService.GetResource("Plugins.Misc.Warehouse.Fields.Product") == configurationModel.Name)
                 {
                     warehouseSettings.ProductLength = configurationModel.Length;
@@ -75,7 +95,7 @@ namespace Nop.Plugin.Misc.Warehouse.Controllers
                 if (_localizationService.GetResource("Plugins.Misc.Warehouse.Fields.Attribute") == configurationModel.Name)
                 {
                     warehouseSettings.AttributeLength = configurationModel.Length;
-   }
+                }
                 if (_localizationService.GetResource("Plugins.Misc.Warehouse.Fields.Value") == configurationModel.Name)
                 {
                     warehouseSettings.ValueLength = configurationModel.Length;
@@ -97,13 +117,41 @@ namespace Nop.Plugin.Misc.Warehouse.Controllers
         [AdminAuthorize]
         public ActionResult WarehouseState()
         {
-            var model = new WarehouseStateModel()
+            var model = new WarehouseStateListModel()
             {
-                Active = true
+                Availablewarehouses = _shippingService.GetAllWarehouses()
+                .Select(x=> new SelectListItem
+                {
+                    Text = x.Name,
+                    Value = x.Id.ToString()
+                   
+                }).ToList()
             };
+            model.Availablewarehouses.Insert(0,new SelectListItem{Text = _localizationService.GetResource(""), Value = "0"});
             return View(model);
         }
 
+        [HttpPost]
+        public ActionResult WarehouseStateList(DataSourceRequest command, WarehouseStateListModel model)
+        {
+            var states = _managerWarehouseService.GetStatesByWarehouse(model.WarehouseId);
+            var gridModel = new DataSourceResult
+            {
+                Data = states.Select(x => new WarehouseStateModel
+                {
+                    Id = x.Id,
+                    WarehouseName= x.Warehouse.Name,
+                    Published = x.Published,
+                    WarehouseId = x.WarehouseId,
+                    NameState = x.NameState,
+                    ParentStateId = x.ParentStateId,
+                    ParentStateName = _managerWarehouseService.GetWarehouseStateById(x.Id).NameState,
+                }),
+                Total = states.Count
+            };
+
+            return Json(gridModel);
+        }
         #endregion
     }
 }

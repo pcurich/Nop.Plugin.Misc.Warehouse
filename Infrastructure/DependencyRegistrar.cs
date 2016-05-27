@@ -1,8 +1,10 @@
 ﻿using Autofac;
+using Autofac.Core;
 using Nop.Core.Configuration;
 using Nop.Core.Infrastructure;
 using Nop.Core.Infrastructure.DependencyManagement;
 using Nop.Plugin.Misc.Warehouse.Data;
+using Nop.Plugin.Misc.Warehouse.Services;
 using Nop.Web.Framework.Mvc;
 
 namespace Nop.Plugin.Misc.Warehouse.Infrastructure
@@ -14,6 +16,10 @@ namespace Nop.Plugin.Misc.Warehouse.Infrastructure
         public void Register(ContainerBuilder builder, ITypeFinder typeFinder, NopConfig config)
         {
             this.RegisterPluginDataContext<WarehouseObjectContext>(builder, CONTEXT_NAME);
+
+            builder.RegisterType<ManagerWarehouseService>()
+                .As<IManagerWarehouseService>()
+                .InstancePerLifetimeScope();
 
             //builder.RegisterType<EfRepository<PromoSliderRecord>>()
             //    .As<IRepository<PromoSliderRecord>>()

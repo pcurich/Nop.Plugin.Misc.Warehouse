@@ -1,8 +1,11 @@
-﻿@using Nop.Web.Framework
-@model Nop.Plugin.Misc.Warehouse.Model.WarehouseStateModel
-
+﻿@using Nop.Core.Infrastructure
+@using Nop.Web.Framework
+@model Nop.Plugin.Misc.Warehouse.Model.WarehouseStateListModel
 @{
     ViewBag.Title = T("Admin.Catalog.Categories.Manage").Text;
+    Layout = "";
+    var defaultGridPageSize = EngineContext.Current.Resolve<Nop.Core.Domain.Common.AdminAreaSettings>().DefaultGridPageSize;
+    var gridPageSizes = EngineContext.Current.Resolve<Nop.Core.Domain.Common.AdminAreaSettings>().GridPageSizes;
 }
 @Html.AntiForgeryToken()
 <div class="section-header">
@@ -20,12 +23,109 @@
             @Html.NopLabelFor(model => model.WarehouseId):
         </td>
         <td class="adminData">
-            @Html.EditorFor(model => model.WarehouseName)
+            @Html.DropDownListFor(model => model.WarehouseId, Model.Availablewarehouses)
         </td>
     </tr>
     <tr>
         <td colspan="2">
-            <input type="button" id="search-categories" class="k-button" value="@T("Admin.Common.Search")" />
+            <input type="button" id="search-states" class="k-button" value="@T("Admin.Common.Search")" />
+        </td>
+    </tr>
+</table>
+
+<table class="adminContent">
+    <tr>
+        <td>
+            <div id="states-grid"></div>
+
+            <script>
+                $(document).ready(function() {
+                    $("#states-grid").kendoGrid({
+                        dataSource: {
+                            type: "json",
+                            transport: {
+                                read: {
+                                    url: "@Html.Raw(Url.Action("WarehouseStateList", "ManagerWarehouse"))",
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: additionalData
+                                }
+                            },
+                            schema: {
+                                data: "Data",
+                                total: "Total",
+                                errors: "Errors"
+                            },
+                            error: function(e) {
+                                display_kendoui_grid_error(e);
+                                // Cancel the changes
+                                this.cancelChanges();
+                            },
+                            pageSize: @(defaultGridPageSize),
+                            serverPaging: true,
+                            serverFiltering: true,
+                            serverSorting: true
+                        },
+                        pageable: {
+                            refresh: true,
+                            pageSizes: [@(gridPageSizes)]
+                        },
+                        editable: {
+                            confirmation: false,
+                            mode: "inline"
+                        },
+                        scrollable: false,
+                        columns: [
+                        {
+                            field: "Id",
+                            headerAttributes: { style: "text-align:center" },
+                            attributes: { style: "text-align:center" },
+                            width: 50
+                        }, {
+                            field: "ParentStateName",
+                            title: "@T("ParentStateName")"
+                        }, {
+                            field: "NameState",
+                            title: "@T("NameState")"
+                        }, {
+                            field: "Published",
+                            title: "@T("Admin.Catalog.Products.Fields.Published")",
+                            width: 100,
+                            headerAttributes: { style: "text-align:center" },
+                            attributes: { style: "text-align:center" },
+                            template: '<img src="@Url.Content("~/Administration/Content/images/")active-#=Published#.gif" />'
+                            }
+                        ]
+                    });
+                });
+            </script>
+
+            <script type="text/javascript">
+                $(document).ready(function() {
+                    $('#search-states').click(function() {
+                        var grid = $('#states-grid').data('kendoGrid');
+                        grid.dataSource.page(1); //new search. Set page size to 1
+                        //grid.dataSource.read(); we already loaded the grid above using "page" function
+                        return false;
+                    });
+
+                    $("#@Html.FieldIdFor(model => model.WarehouseId)").change(function() {
+                            $("#search-states").click();
+                            return false;
+                    });
+
+                });
+
+                function additionalData() {
+                    var data = {
+                        WarehouseId: $('#@Html.FieldIdFor(model => model.WarehouseId)').val()
+                    };
+                    addAntiForgeryToken(data);
+                    return data;
+                }
+
+            </script>
+
         </td>
     </tr>
 </table>

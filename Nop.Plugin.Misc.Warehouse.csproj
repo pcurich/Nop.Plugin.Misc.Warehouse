@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{8B1F2B9E-B457-4088-931D-579B8DDE0EA1}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Nop.Plugin.Misc.Warehouse</RootNamespace>
     <AssemblyName>Nop.Plugin.Misc.Warehouse</AssemblyName>
@@ -95,26 +95,10 @@
   <ItemGroup>
     <Compile Include="Controllers\ManagerWarehouseController.cs" />
     <Compile Include="Data\WarehouseObjectContext.cs" />
-    <Compile Include="Documents\BillProcessor.cs" />
-    <Compile Include="Documents\Builder\BillDetailsTableBuilder.cs" />
-    <Compile Include="Documents\Builder\BillSummaryTableBuilder.cs" />
-    <Compile Include="Documents\Builder\CompanyContactInfoBuilder.cs" />
-    <Compile Include="Documents\Builder\CompanyLogoBuilder.cs" />
-    <Compile Include="Documents\Builder\HistoricalUsageChartBuild.cs" />
-    <Compile Include="Documents\Builder\PaymentStubBuilder.cs" />
-    <Compile Include="Documents\Builder\PaymentStubPerforatedLineBuilder.cs" />
-    <Compile Include="Documents\Builder\QrCodeBuilder.cs" />
-    <Compile Include="Documents\Builder\WatermarkBuilder.cs" />
-    <Compile Include="Documents\GlobalDocumentSettings.cs" />
-    <Compile Include="Documents\HelperMethods.cs" />
-    <Compile Include="Documents\LoadingAndSaving.cs" />
-    <Compile Include="Documents\MailMerge\MailMergeGoblaDocumentSettings.cs" />
-    <Compile Include="Documents\MailMerge\MailMergeHelperMethod.cs" />
-    <Compile Include="Documents\MailMerge\RunDemos.cs" />
-    <Compile Include="Documents\Models\ChargeSummary.cs" />
-    <Compile Include="Documents\Models\CompanyContactInfo.cs" />
-    <Compile Include="Documents\Models\ConsumerContactInfo.cs" />
-    <Compile Include="Documents\Models\ContactInfo.cs" />
+    <Compile Include="Data\WarehouseStateDocumentMap.cs" />
+    <Compile Include="Data\WarehouseStateFlowControlMap.cs" />
+    <Compile Include="Data\WarehouseStateMap.cs" />
+    <Compile Include="Domain\WarehouseState.cs" />
     <Compile Include="Domain\WarehouseStateDocument.cs" />
     <Compile Include="Domain\WarehouseStateDocumentFieldValue.cs" />
     <Compile Include="Domain\WarehouseStateFlowControl.cs" />
@@ -122,9 +106,11 @@
     <Compile Include="Infrastructure\RouteProvider.cs" />
     <Compile Include="Infrastructure\WarehouseViewEngine.cs" />
     <Compile Include="Model\ConfigurationModel.cs" />
-    <Compile Include="Domain\WarehouseState.cs" />
+    <Compile Include="Model\WarehouseStateListModel.cs" />
     <Compile Include="Model\WarehouseStateModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\IManagerWarehouseService.cs" />
+    <Compile Include="Services\ManagerWarehouseService.cs" />
     <Compile Include="WarehousePlugin.cs" />
     <Compile Include="WarehouseSettings.cs" />
   </ItemGroup>
@@ -167,17 +153,17 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
-    <None Include="Views\ManagerWarehouse\Configure.cshtml">
+    <Content Include="Views\ManagerWarehouse\Configure.cshtml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </Content>
+    <Content Include="Views\ManagerWarehouse\WarehouseState.cshtml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="web.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Documents\MailMerge\Content\" />
-    <Folder Include="Documents\MailMerge\Model\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

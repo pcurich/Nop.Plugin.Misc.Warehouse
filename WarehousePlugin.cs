@@ -1,4 +1,5 @@
-﻿using System.Web.Routing;
+﻿using System.Linq;
+using System.Web.Routing;
 using Nop.Core.Domain.Security;
 using Nop.Core.Infrastructure;
 using Nop.Core.Plugins;
@@ -15,11 +16,13 @@ namespace Nop.Plugin.Misc.Warehouse
     {
         private readonly WarehouseObjectContext _context;
         private readonly ISettingService _settingService;
+        private readonly ILocalizationService _localizationService;
 
-        public WarehousePlugin(WarehouseObjectContext context, ISettingService settingService)
+        public WarehousePlugin(WarehouseObjectContext context, ISettingService settingService, ILocalizationService localizationService)
         {
             _context = context;
             _settingService = settingService;
+            _localizationService = localizationService;
         }
 
         public void ManageSiteMap(SiteMapNode rootNode)
@@ -32,9 +35,37 @@ namespace Nop.Plugin.Misc.Warehouse
                 Name = "Admin area. Manager Warehouse"
             };
 
-            if (permissionService.Authorize(permissionRecord))
+            //if (permissionService.Authorize(permissionRecord))
+            //{
+            var parentNode = new SiteMapNode
             {
-            }
+                SystemName = "ManagerWarehouse",
+                Title = "Manager Of Warehouse",
+                //ActionName = " ",
+                ControllerName = "ManagerWarehouse",
+                Visible = true,
+                RouteValues = new RouteValueDictionary { { "area", null } }
+            };
+
+            var manageState = new SiteMapNode
+            {
+                SystemName = "WidgetPromoSlider",
+                Title = "States of Flow",//_localizationService.GetResource("Plugins.Widget.PromoSlider.Menu.ManagerSliders"),
+                ActionName = "WarehouseState",
+                ControllerName = "ManagerWarehouse",
+                Visible = true,
+                RouteValues = new RouteValueDictionary { { "area", null } }
+            };
+
+            parentNode.ChildNodes.Add(manageState);
+
+            var pluginNode = rootNode.ChildNodes.FirstOrDefault(x => x.SystemName == "ManagerWarehouse");
+            if (pluginNode != null)
+                pluginNode.ChildNodes.Add(parentNode);
+            else
+                rootNode.ChildNodes.Add(parentNode);
+
+            //}
         }
 
         public void GetConfigurationRoute(out string actionName, out string controllerName,
@@ -53,23 +84,21 @@ namespace Nop.Plugin.Misc.Warehouse
 
         public override void Install()
         {
-            this.AddOrUpdatePluginLocaleResource("Plugins.Misc.Warehouse.Fields.ProductName", "Product", "en-US");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Misc.Warehouse.Fields.ProductName.Hint",
-                "Id Product as used as part of sku code", "en-US");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Misc.Warehouse.Fields.AttributeName", "Attribute", "en-US");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Misc.Warehouse.Fields.AttributeName.Hint",
-                "Id Attribute of a Product as used as part of sku code", "en-US");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Misc.Warehouse.Fields.ValueName", "Value", "en-US");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Misc.Warehouse.Fields.ValueName.Hint",
-                "Id Value of a atribute in a Product as used as part of sku code", "en-US");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Misc.Warehouse.Fields.Length", "Length", "en-US");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Misc.Warehouse.Fields.Length.Hint", "Length's part of code",
-                "en-US");
+            #region Localization
 
-            this.AddOrUpdatePluginLocaleResource("Plugins.Misc.Warehouse.Fields.Title",
-                "Manager and Configration of Warehouses", "en-US");
-            this.AddOrUpdatePluginLocaleResource("Plugins.Misc.Warehouse.Fields.Description",
-                "In this module you can manager the code of your products", "en-US");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Misc.Warehouse.Fields.ProductName", "Product", "en-US");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Misc.Warehouse.Fields.ProductName.Hint", "Id Product as used as part of sku code", "en-US");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Misc.Warehouse.Fields.AttributeName", "Attribute", "en-US");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Misc.Warehouse.Fields.AttributeName.Hint", "Id Attribute of a Product as used as part of sku code", "en-US");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Misc.Warehouse.Fields.ValueName", "Value", "en-US");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Misc.Warehouse.Fields.ValueName.Hint", "Id Value of a atribute in a Product as used as part of sku code", "en-US");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Misc.Warehouse.Fields.Length", "Length", "en-US");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Misc.Warehouse.Fields.Length.Hint", "Length's part of code", "en-US");
+
+            this.AddOrUpdatePluginLocaleResource("Plugins.Misc.Warehouse.Fields.Title", "Manager and Configration of Warehouses", "en-US");
+            this.AddOrUpdatePluginLocaleResource("Plugins.Misc.Warehouse.Fields.Description", "In this module you can manager the code of your products", "en-US");
+
+            #endregion
 
             var permissionService = EngineContext.Current.Resolve<IPermissionService>();
             var permissionRecord = new PermissionRecord
@@ -87,7 +116,7 @@ namespace Nop.Plugin.Misc.Warehouse
                 ValueLength = 2
             };
             _settingService.SaveSetting(settings);
-            // _context.Install();
+            _context.Install();
             base.Install();
         }
 
@@ -95,6 +124,8 @@ namespace Nop.Plugin.Misc.Warehouse
         {
             //settings
             _settingService.DeleteSetting<WarehouseSettings>();
+
+            #region Localization
 
             this.DeletePluginLocaleResource("Plugins.Misc.Warehouse.Fields.ProductName");
             this.DeletePluginLocaleResource("Plugins.Misc.Warehouse.Fields.ProductName.Hint");
@@ -109,10 +140,15 @@ namespace Nop.Plugin.Misc.Warehouse
             this.DeletePluginLocaleResource("Plugins.Misc.Warehouse.Fields.Title");
             this.DeletePluginLocaleResource("Plugins.Misc.Warehouse.Fields.Description");
 
+            #endregion
+
             var permissionService = EngineContext.Current.Resolve<IPermissionService>();
-            permissionService.DeletePermissionRecord(
-                permissionService.GetPermissionRecordBySystemName("ManagerWarehouse"));
-            //_context.Uninstall();
+            var permission = permissionService.GetPermissionRecordBySystemName("ManagerWarehouse");
+            
+            if (permission!=null)
+                permissionService.DeletePermissionRecord(permission);
+
+            _context.Uninstall();
             base.Uninstall();
         }
 

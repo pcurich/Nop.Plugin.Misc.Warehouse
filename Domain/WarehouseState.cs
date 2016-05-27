@@ -7,9 +7,10 @@ namespace Nop.Plugin.Misc.Warehouse.Domain
     {
         private ICollection<WarehouseStateFlowControl> _warehouseStateFlowControls;
         public int WarehouseId { get; set; }
+        public virtual Core.Domain.Shipping.Warehouse Warehouse { get; set; }
         public int ParentStateId { get; set; }
         public string NameState { get; set; }
-        public bool Active { get; set; }
+        public bool Published { get; set; }
 
         public virtual ICollection<WarehouseStateFlowControl> WarehouseStateFlowControls
         {
